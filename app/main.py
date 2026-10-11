@@ -11,8 +11,11 @@ from pymongo.errors import DuplicateKeyError
 
 load_dotenv()
 
-client = MongoClient(os.getenv("MONGO_URI", "mongodb://localhost:27017"))
-db = client[os.getenv("MONGO_DB", "attendance_db")]
+raw_mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017").strip(' "\'')
+raw_mongo_db = os.getenv("MONGO_DB", "attendance_db").strip(' "\'')
+
+client = MongoClient(raw_mongo_uri, serverSelectionTimeoutMS=5000)
+db = client[raw_mongo_db]
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -39,13 +42,19 @@ def serve_index():
 
 @app.on_event("startup")
 def startup_db_client():
-    db.employees.create_index([("emp_code", ASCENDING)], unique=True)
-    db.employees.create_index([("department", ASCENDING), ("joined_on", ASCENDING)])
-    db.employees.create_index([("joined_on", ASCENDING)])
-    db.attendance_logs.create_index([("emp_code", ASCENDING), ("date", ASCENDING)], unique=True)
-    db.attendance_logs.create_index([("date", ASCENDING), ("emp_code", ASCENDING)])
-    db.attendance_logs.create_index([("date", ASCENDING), ("late_minutes", ASCENDING)])
-    db.attendance_logs.create_index([("punch_in", ASCENDING)])
+    try:
+        client.admin.command("ping")
+        print("[STARTUP] Connected to MongoDB Atlas successfully.")
+        db.employees.create_index([("emp_code", ASCENDING)], unique=True)
+        db.employees.create_index([("department", ASCENDING), ("joined_on", ASCENDING)])
+        db.employees.create_index([("joined_on", ASCENDING)])
+        db.attendance_logs.create_index([("emp_code", ASCENDING), ("date", ASCENDING)], unique=True)
+        db.attendance_logs.create_index([("date", ASCENDING), ("emp_code", ASCENDING)])
+        db.attendance_logs.create_index([("date", ASCENDING), ("late_minutes", ASCENDING)])
+        db.attendance_logs.create_index([("punch_in", ASCENDING)])
+        print("[STARTUP] Indexes ensured successfully.")
+    except Exception as e:
+        print(f"[STARTUP WARNING] MongoDB connection or index creation failed: {e}")
 
 # --------------------------------------------------------------------------- #
 # Helpers
