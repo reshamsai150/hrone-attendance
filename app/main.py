@@ -28,6 +28,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.responses import FileResponse
+
+@app.get("/", include_in_schema=False)
+def serve_index():
+    index_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"message": "HROne Employee Attendance & Analytics API is running. Visit /docs for Swagger UI."}
+
 @app.on_event("startup")
 def startup_db_client():
     db.employees.create_index([("emp_code", ASCENDING)], unique=True)

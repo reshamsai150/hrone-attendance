@@ -573,7 +573,7 @@
         <div class="header-meta">
             <span id="daemonStatusText">DAEMON: ACTIVE</span>
             <span style="color: var(--accent-green);" id="headerPing">● 42ms</span>
-            <a href="http://localhost:8000/docs" target="_blank" style="color: var(--text-primary); text-decoration: none;">SWAGGER ↗</a>
+            <a href="/docs" target="_blank" style="color: var(--text-primary); text-decoration: none;">SWAGGER ↗</a>
         </div>
     </header>
 
@@ -825,7 +825,10 @@
     </section>
 
     <script>
-        const API_BASE = "http://127.0.0.1:8000";
+        // Auto-detect backend host: use window.location.origin if hosted together on Render, or fallback to port 8000 if running locally on 8080
+        const API_BASE = window.location.port === "8080" 
+            ? "http://127.0.0.1:8000" 
+            : window.location.origin.replace(/\/$/, "");
         let activeEndpoint = "health";
 
         // 1. Connection Mode Switcher
