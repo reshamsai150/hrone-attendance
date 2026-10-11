@@ -14,7 +14,14 @@ load_dotenv()
 raw_mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017").strip(' "\'')
 raw_mongo_db = os.getenv("MONGO_DB", "attendance_db").strip(' "\'')
 
-client = MongoClient(raw_mongo_uri, serverSelectionTimeoutMS=5000)
+client_kwargs = {"serverSelectionTimeoutMS": 5000}
+try:
+    import certifi
+    client_kwargs["tlsCAFile"] = certifi.where()
+except Exception:
+    pass
+
+client = MongoClient(raw_mongo_uri, **client_kwargs)
 db = client[raw_mongo_db]
 
 IST = timezone(timedelta(hours=5, minutes=30))
