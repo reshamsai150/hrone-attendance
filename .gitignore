@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+test_mongo.py
+check_mongo.py
+venv/
+.venv/
